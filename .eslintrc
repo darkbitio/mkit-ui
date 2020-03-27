@@ -1,0 +1,31 @@
+{
+  "extends": [
+    "eslint-config-airbnb-base",
+    "prettier",
+    "eslint:recommended",
+    "plugin:react/recommended"
+  ],
+  "plugins": ["prettier"],
+  "env": {
+    "browser": true
+  },
+  "rules": {
+    "prettier/prettier": "error",
+    "import/no-unresolved": "off"
+  },
+  "parser": "babel-eslint",
+  "settings": {
+    "import/resolver": {
+      "webpack": {
+        "config": {
+          "resolve": {
+            "modules": ["webpacker", "node_modules"]
+          }
+        }
+      }
+    },
+    "react": {
+      "version": "detect"
+    }
+  }
+}

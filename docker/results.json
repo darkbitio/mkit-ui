@@ -1,0 +1,357 @@
+{
+  "summary": {},
+  "version": "2.0.0",
+  "results": [
+    {
+      "version": 1,
+      "platform": "GCP",
+      "category": "Logging and Monitoring",
+      "resource": "GKE",
+      "title": "Ensure Stackdriver Logging and Monitoring is configured",
+      "description": "Exporting logs and metrics to a dedicated, persistent datastore such as Stackdriver ensures availability of audit data following a cluster security event, and provides a central location for analysis of log and metric data collated from multiple sources.",
+      "remediation": "Ensure `--enable-stackdriver-kubernetes` is set during cluster configuration, or run `gcloud container clusters update` and pass the `--enable-stackdriver-kubernetes` flag to enable the addons.",
+      "validation": "Run `gcloud container clusters describe` and review the configuration under `loggingService` and `monitoringService`.  They should be configured with `logging.googleapis.com/kubernetes` and `monitoring.googleapis.com/kubernetes`, respectively.",
+      "severity": 0.8,
+      "effort": 0.2,
+      "references": [
+        {
+          "url": "https://cloud.google.com/monitoring/kubernetes-engine",
+          "ref": "GKE Monitoring and Logging"
+        }
+      ],
+      "resources": [
+        { "status": "passed", "resource": "gke-c2/us-central1/gke-good" }
+      ],
+      "result": { "status": "passed", "passed": 1, "total": 1 }
+    },
+    {
+      "version": 1,
+      "platform": "GCP",
+      "category": "Identity and Access Management",
+      "resource": "GKE",
+      "title": "Ensure Basic Authentication is disabled",
+      "description": "Until GKE 1.12, Basic Authentication was enabled by default on all clusters unless explicitly disabled.  Clusters that were created at or before version 1.12 and have been upgraded since will still have a valid username and password credential that grants full cluster access.  These credentials cannot be revoked or rotated without recreating the cluster.  Furthermore, they are available in clear-text via the `gcloud container clusters list/get` command, and many IAM Roles contain the `container.clusters.get` and `container.clusters.list` permissions, including `Project Viewer`.  When coupled with network access to the GKE API server, a clear path to become `cluster-admin` is possible.",
+      "remediation": "Recreate the GKE cluster from a recent version (1.12+) ensuring the `--no-enable-basic-auth` flag set or supply a <blank> value for the `master_auth.username` field when using Terraform.",
+      "validation": "Run `gcloud container clusters get` and review the `masterAuth` configuration block.  There should not be a `username` and `password` field with values.",
+      "severity": 1.0,
+      "effort": 0.9,
+      "references": [
+        {
+          "url": "https://cloud.google.com/kubernetes-engine/docs/how-to/iam-integration",
+          "ref": "Auth"
+        }
+      ],
+      "resources": [
+        { "status": "passed", "resource": "gke-c2/us-central1/gke-good" }
+      ],
+      "result": { "status": "passed", "passed": 1, "total": 1 }
+    },
+    {
+      "version": 1,
+      "platform": "GCP",
+      "category": "Network Access Control",
+      "resource": "GKE",
+      "title": "Ensure GKE Nodes are not public",
+      "description": "By default, GKE nodes are created with both private and public IP addresses assigned, and the default Firewall Rules in the default Network permit remote access via SSH on TCP/22 from `0.0.0.0/0`.  Preventing GKE Nodes from being assigned a public IP address ensures that remote access attempts using SSH cannot be routed from the public Internet.  Should a pod become compromised and escape to the underlying node, it's possible to use that access to add SSH credentials to the host configuration.  However, that node will not be directly accessible from the Internet for SSH access if a public IP is not assigned.",
+      "remediation": "Recreate the GKE cluster ensuring the `--enable-private-nodes` flag is configured.  Ensure administrators have another mechanism such as a Bastion Host in the same VPC or Cloud Identity-Aware Proxy access is available if SSH access is still required.",
+      "validation": "Run `gcloud container clusters get` and review the `privateClusterConfig` configuration block. Ensure `enablePrivateNodes` is set to `true`.",
+      "severity": 0.5,
+      "effort": 0.9,
+      "references": [
+        {
+          "url": "https://cloud.google.com/kubernetes-engine/docs/how-to/private-clusters",
+          "ref": "GKE Private Nodes"
+        }
+      ],
+      "resources": [
+        { "status": "passed", "resource": "gke-c2/us-central1/gke-good" }
+      ],
+      "result": { "status": "passed", "passed": 1, "total": 1 }
+    },
+    {
+      "version": 1,
+      "platform": "GCP",
+      "category": "Network Access Control",
+      "resource": "GKE",
+      "title": "Ensure the GKE Control Plane is not public",
+      "description": "By default, the GKE Control Plane (Kubernetes API) is assigned a public IP address and the network access control allows access from `0.0.0.0/0`.  When a new vulnerability is found in the Kubernetes API server, the scope of potential attackers is the entire Internet.  By configuring the GKE Cluster with a private IP or by adding a restricted list of CIDRs with access to the API server, the scope is greatly limited and can buy valuable time to patch/upgrade.  Also, if credentials from in-cluster service accounts and Kubernetes components are leaked, they cannot be leveraged against the API server from any location.",
+      "remediation": "Recreate the GKE Cluster with the `--enable-private-endpoint` flag set.  If the cluster cannot be recreated with only a private IP, ensure that `--master-authorized-networks` is configured with a limited set of CIDR ranges.",
+      "validation": "Run `gcloud container clusters get` and review the `privateClusterConfig` configuration block. Ensure `enablePrivateEndpoint` is set to `true`.  Or, ensure the `masterAuthorizedNetworksConfig` configuration block has `cidrBlocks` that do not include `0.0.0.0/0`.",
+      "severity": 1.0,
+      "effort": 0.2,
+      "references": [
+        {
+          "url": "https://cloud.google.com/kubernetes-engine/docs/how-to/private-clusters",
+          "ref": "GKE Private Control Plane"
+        },
+        {
+          "url": "https://cloud.google.com/kubernetes-engine/docs/how-to/authorized-networks",
+          "ref": "GKE Master Authorized Networks"
+        }
+      ],
+      "resources": [
+        { "status": "passed", "resource": "gke-c2/us-central1/gke-good" }
+      ],
+      "result": { "status": "passed", "passed": 1, "total": 1 }
+    },
+    {
+      "version": 1,
+      "platform": "GCP",
+      "category": "Network Access Control",
+      "resource": "GKE",
+      "title": "Ensure the GKE Cluster has the Network Policy managed addon enabled",
+      "description": "By default, all Kubernetes pods inside a cluster can communicate with each other--even across namespaces.  All production Kubernetes clusters should have support enabled for being able to define Layer 4 `NetworkPolicy` resources, and in many cases, this is an optional addon that must be explicitly enabled.  With this support enabled, it's possible to define policies inside the cluster that restrict inbound and outbound network traffic to pods within namespaces and provide micro-segmentation.  Should a pod become compromised, strict `NetworkPolicy` configurations can significantly limit the attacker's ability to move laterally via the network.",
+      "remediation": "During cluster creation, ensure the `--enable-network-policy` flag is configured.  For existing clusters, run `gcloud container clusters update cluster-name --update-addons=NetworkPolicy=ENABLED` followed by `gcloud container clusters update cluster-name --enable-network-policy`.  Note that this forces all nodepools to be recreated to have the CNI changes take effect.",
+      "validation": "Run `gcloud container clusters get` and review the `networkPolicy` configuration block. Ensure `provider` is set to `CALICO` and `enabled` is `true`.",
+      "severity": 0.9,
+      "effort": 0.5,
+      "references": [
+        {
+          "url": "https://cloud.google.com/kubernetes-engine/docs/how-to/network-policy#enabling_network_policy_enforcement",
+          "ref": "GKE Network Policy"
+        },
+        {
+          "url": "https://kubernetes.io/docs/concepts/services-networking/network-policies/#the-networkpolicy-resource",
+          "ref": "Network Policy"
+        }
+      ],
+      "resources": [
+        { "status": "passed", "resource": "gke-c2/us-central1/gke-good" }
+      ],
+      "result": { "status": "passed", "passed": 1, "total": 1 }
+    },
+    {
+      "version": 1,
+      "platform": "GCP",
+      "category": "Identity and Access Management",
+      "resource": "GKE",
+      "title": "Ensure GKE Cluster Nodepools are created with minimal OAuth Access Scopes and dedicated Service Accounts",
+      "description": "By default, GKE Cluster Nodepools are assigned the default Compute service account in the project, and this service account is bound to the `Project Editor` IAM Role which has wide-ranging permissions in the project across nearly all services.  However, these service account credentials bound to the GCE nodes that make up the GKE Nodepool can be further restricted by setting service-specific OAuth Scopes.  Unless additional network restrictions are place on pods running inside the cluster, this means that any pod in any namespace can obtain access to these instance credentials via the GCP Metadata API (169.254.169.254).  Before GKE 1.12, the OAuth Scopes commonly contained `compute` or even `cloud-platform`.  When combined with the `Project Editor` IAM Role, these instance credentials allow near full access to all `gcloud compute` commands or all gcloud services, respectively.  Since GKE 1.12, the scopes needed for proper management function are now a fixed list.  Pods wanting to gain access to credentials for accessing GCP APIs should use the Workload Identity feature to both block access to the instance credentials via the Metadata API and to map GCP Service Accounts to Kubernetes Service Accounts.",
+      "remediation": "Create a dedicated GCP Service Account.  Create and bind an IAM Role with `roles/monitoring.metricWriter`, `monitoring.viewer`, and `logging.logWriter` permissions to the dedicated GCP Service Account.  Specify that service account during Nodepool creation via the `--service-account` flag.  Recreation is necessary for existing nodepools.",
+      "validation": "Run `gcloud container clusters get` and review the `nodeConfig` configuration block. Ensure `serviceAccount` is not set to `default` and `oauthScopes` contains only `https://www.googleapis.com/auth/devstorage.read_only`, `logging.write`, `monitoring`, `service.management.readonly`, `servicecontrol`, and `trace.append`.",
+      "severity": 0.7,
+      "effort": 0.2,
+      "references": [
+        {
+          "url": "https://cloud.google.com/kubernetes-engine/docs/how-to/access-scopes",
+          "ref": "GKE OAuth Access Scopes"
+        },
+        {
+          "url": "https://cloud.google.com/compute/docs/access/service-accounts#service_account_permissions",
+          "ref": "GCP Service Account Permissions"
+        },
+        {
+          "url": "https://cloud.google.com/compute/docs/access/service-accounts#default_service_account",
+          "ref": "GCP Default Service Account"
+        }
+      ],
+      "resources": [
+        {
+          "status": "failed",
+          "resource": "gke-c2/us-central1/gke-good/default-pool"
+        }
+      ],
+      "result": { "status": "failed", "passed": 0, "total": 1 }
+    },
+    {
+      "version": 1,
+      "platform": "K8S",
+      "category": "Identity and Access Management",
+      "resource": "Pods",
+      "title": "Ensure pods only run in desired namespaces",
+      "description": "description",
+      "remediation": "remediation",
+      "validation": "N/A",
+      "severity": 1.0,
+      "effort": 0.2,
+      "references": [{ "url": "https://ref1.local", "ref": "ref1" }],
+      "resources": [
+        { "status": "failed", "resource": "default namespace" },
+        { "status": "passed", "resource": "kube-public namespace" },
+        { "status": "passed", "resource": "kube-node-lease namespace" }
+      ],
+      "result": { "status": "failed", "passed": 2, "total": 3 }
+    },
+    {
+      "version": 1,
+      "platform": "K8S",
+      "category": "Identity and Access Management",
+      "resource": "Pods",
+      "title": "Ensure Dashboard is not running",
+      "description": "Ensure Dashboard is not running",
+      "remediation": "remediation",
+      "validation": "N/A",
+      "severity": 1.0,
+      "effort": 0.2,
+      "references": [{ "url": "https://ref1.local", "ref": "ref1" }],
+      "resources": [{ "status": "passed", "resource": "Dashboard" }],
+      "result": { "status": "passed", "passed": 1, "total": 1 }
+    },
+    {
+      "version": 1,
+      "platform": "K8S",
+      "category": "Identity and Access Management",
+      "resource": "Pods",
+      "title": "Ensure Tiller is not running",
+      "description": "Ensure Tiller is not running",
+      "remediation": "remediation",
+      "validation": "N/A",
+      "severity": 1.0,
+      "effort": 0.2,
+      "references": [{ "url": "https://ref1.local", "ref": "ref1" }],
+      "resources": [
+        { "status": "passed", "resource": "default/tiller-deploy" },
+        { "status": "passed", "resource": "kube-node-lease/tiller-deploy" },
+        { "status": "passed", "resource": "kube-public/tiller-deploy" },
+        { "status": "passed", "resource": "kube-system/tiller-deploy" }
+      ],
+      "result": { "status": "passed", "passed": 4, "total": 4 }
+    },
+    {
+      "version": 1,
+      "platform": "K8S",
+      "category": "Identity and Access Management",
+      "resource": "Pods",
+      "title": "No pods with latest container tag",
+      "description": "",
+      "remediation": "remediation",
+      "validation": "N/A",
+      "severity": 1.0,
+      "effort": 0.2,
+      "references": [{ "url": "https://ref1.local", "ref": "ref1" }],
+      "resources": [
+        { "status": "failed", "resource": "default/mynginx-6897c84455-fzq86" },
+        { "status": "passed", "resource": "kube-system/calico-node-5mp2l" },
+        { "status": "passed", "resource": "kube-system/calico-node-bwfnk" },
+        {
+          "status": "passed",
+          "resource": "kube-system/calico-node-vertical-autoscaler-b889c775f-6dht4"
+        },
+        { "status": "passed", "resource": "kube-system/calico-node-xh5lr" },
+        {
+          "status": "passed",
+          "resource": "kube-system/calico-typha-59cb487c49-57tgj"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/calico-typha-horizontal-autoscaler-d777c75b4-5v86g"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/calico-typha-vertical-autoscaler-d9b7979f8-25fmd"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/event-exporter-v0.2.5-7df89f4b8f-flvkd"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/fluentd-gcp-scaler-54ccb89d5-p22c8"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/fluentd-gcp-v3.1.1-66cpb"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/fluentd-gcp-v3.1.1-b6htx"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/fluentd-gcp-v3.1.1-qpmhs"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/heapster-gke-6bbb886b6b-nwk29"
+        },
+        { "status": "passed", "resource": "kube-system/ip-masq-agent-2sdgm" },
+        { "status": "passed", "resource": "kube-system/ip-masq-agent-5dgs5" },
+        { "status": "passed", "resource": "kube-system/ip-masq-agent-d2dwl" },
+        {
+          "status": "passed",
+          "resource": "kube-system/kube-dns-5877696fb4-5klct"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/kube-dns-5877696fb4-cm2c9"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/kube-dns-autoscaler-8687c64fc-mlbmc"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/kube-proxy-gke-gke-good-default-pool-1b5deb56-dt0r"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/kube-proxy-gke-gke-good-default-pool-ac9926bc-2g92"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/kube-proxy-gke-gke-good-default-pool-b81d5081-40jh"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/l7-default-backend-8f479dd9-m5t7t"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/metrics-server-v0.3.1-5c6fbf777-mlz4r"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/prometheus-to-sd-ctcbl"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/prometheus-to-sd-tw25m"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/prometheus-to-sd-xxc5g"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/stackdriver-metadata-agent-cluster-level-5cd86c9cc5-vn6wz"
+        }
+      ],
+      "result": { "status": "failed", "passed": 28, "total": 29 }
+    },
+    {
+      "version": 1,
+      "platform": "K8S",
+      "category": "Identity and Access Management",
+      "resource": "Pods",
+      "title": "Validate NetworkPolicy enforcement is installed",
+      "description": "Ensure Calico is installed on EKS/GKE or Azure CNI is installed on AKS",
+      "remediation": "remediation",
+      "validation": "N/A",
+      "severity": 1.0,
+      "effort": 0.2,
+      "references": [{ "url": "https://ref1.local", "ref": "ref1" }],
+      "resources": [
+        { "status": "passed", "resource": "NetworkPolicy Daemonset" }
+      ],
+      "result": { "status": "passed", "passed": 1, "total": 1 }
+    },
+    {
+      "version": 1,
+      "platform": "K8S",
+      "category": "Identity and Access Management",
+      "resource": "Pods",
+      "title": "Validate PodSpec enforcement is installed",
+      "description": "Ensure OPA/Gatekeeper, K-rail, or PSP is installed",
+      "remediation": "remediation",
+      "validation": "N/A",
+      "severity": 1.0,
+      "effort": 0.2,
+      "references": [{ "url": "https://ref1.local", "ref": "ref1" }],
+      "resources": [
+        { "status": "failed", "resource": "OPA/Gatekeeper" },
+        { "status": "failed", "resource": "K-rail" }
+      ],
+      "result": { "status": "failed", "passed": 0, "total": 2 }
+    }
+  ]
+}

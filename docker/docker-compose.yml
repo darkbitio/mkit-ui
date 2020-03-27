@@ -1,0 +1,9 @@
+version: '3'
+services:
+  mkit:
+    image: darkbitio/mkit:0.0.1
+    build: .
+    volumes:
+      - ${PWD}/results.json:/home/node/results.json
+    ports:
+      - '8000:8000'
