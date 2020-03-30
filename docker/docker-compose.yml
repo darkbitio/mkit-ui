@@ -1,6 +1,6 @@
 version: '3'
 services:
-  mkit:
+  mkit-ui:
     image: darkbitio/mkit:0.0.1
     build: .
     volumes:
