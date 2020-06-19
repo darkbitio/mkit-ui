@@ -50,6 +50,25 @@ Find out more about deployment here:
 ✨  Done in 14.96s.
 ```
 
+### Build Static Demo Site
+
+Push a new release tag.
+
+```
+$ git tag v1.2.0
+$ git push 
+```
+
+
+### Build Static Demo Site
+
+Builds the GitHub pages static demo site.
+
+```
+$ yarn build-demo
+```
+
+
 ### Build
 
 Builds the Docker image running a minimal Node/Express.js server to serve the static frontend files.
