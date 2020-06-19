@@ -22,10 +22,14 @@
       "resources": [
         {
           "status": "passed",
-          "resource": "temp-k8s-272600/us-central1/backend"
+          "resource": "demo1-good/us-central1/gke-good"
         }
       ],
-      "result": { "status": "passed", "passed": 1, "total": 1 }
+      "result": {
+        "status": "passed",
+        "passed": 1,
+        "total": 1
+      }
     },
     {
       "version": 1,
@@ -47,10 +51,14 @@
       "resources": [
         {
           "status": "passed",
-          "resource": "temp-k8s-272600/us-central1/backend"
+          "resource": "demo1-good/us-central1/gke-good"
         }
       ],
-      "result": { "status": "passed", "passed": 1, "total": 1 }
+      "result": {
+        "status": "passed",
+        "passed": 1,
+        "total": 1
+      }
     },
     {
       "version": 1,
@@ -71,11 +79,15 @@
       ],
       "resources": [
         {
-          "status": "failed",
-          "resource": "temp-k8s-272600/us-central1/backend"
+          "status": "passed",
+          "resource": "demo1-good/us-central1/gke-good"
         }
       ],
-      "result": { "status": "failed", "passed": 0, "total": 1 }
+      "result": {
+        "status": "passed",
+        "passed": 1,
+        "total": 1
+      }
     },
     {
       "version": 1,
@@ -84,7 +96,7 @@
       "resource": "GKE",
       "title": "Ensure the GKE Control Plane is not public",
       "description": "By default, the GKE Control Plane (Kubernetes API) is assigned a public IP address and the network access control allows access from `0.0.0.0/0`.  When a new vulnerability is found in the Kubernetes API server, the scope of potential attackers is the entire Internet.  By configuring the GKE Cluster with a private IP or by adding a restricted list of CIDRs with access to the API server, the scope is greatly limited and can buy valuable time to patch/upgrade.  Also, if credentials from in-cluster service accounts and Kubernetes components are leaked, they cannot be leveraged against the API server from any location.",
-      "remediation": "Recreate the GKE Cluster with the `--enable-private-endpoint` flag set.  If the cluster cannot be recreated with only a private IP, ensure that `--master-authorized-networks` is configured with a limited set of CIDR ranges.",
+      "remediation": "Recreate the GKE Cluster with the `--enable-private-endpoint` flag set.  If the cluster cannot be recreated with only a private IP, ensure that `--master-authorized-networks` is configured with a limited set of CIDR ranges.'",
       "validation": "Run `gcloud container clusters get` and review the `privateClusterConfig` configuration block. Ensure `enablePrivateEndpoint` is set to `true`.  Or, ensure the `masterAuthorizedNetworksConfig` configuration block has `cidrBlocks` that do not include `0.0.0.0/0`.",
       "severity": 1,
       "effort": 0.2,
@@ -100,11 +112,15 @@
       ],
       "resources": [
         {
-          "status": "failed",
-          "resource": "temp-k8s-272600/us-central1/backend"
+          "status": "passed",
+          "resource": "demo1-good/us-central1/gke-good"
         }
       ],
-      "result": { "status": "failed", "passed": 0, "total": 1 }
+      "result": {
+        "status": "passed",
+        "passed": 1,
+        "total": 1
+      }
     },
     {
       "version": 1,
@@ -129,11 +145,15 @@
       ],
       "resources": [
         {
-          "status": "failed",
-          "resource": "temp-k8s-272600/us-central1/backend"
+          "status": "passed",
+          "resource": "demo1-good/us-central1/gke-good"
         }
       ],
-      "result": { "status": "failed", "passed": 0, "total": 1 }
+      "result": {
+        "status": "passed",
+        "passed": 1,
+        "total": 1
+      }
     },
     {
       "version": 1,
@@ -162,15 +182,147 @@
       ],
       "resources": [
         {
-          "status": "failed",
-          "resource": "temp-k8s-272600/us-central1/backend/default-pool"
-        },
-        {
-          "status": "failed",
-          "resource": "temp-k8s-272600/us-central1/backend/browser-pool"
+          "status": "passed",
+          "resource": "demo1-good/us-central1/gke-good/default-pool"
         }
       ],
-      "result": { "status": "failed", "passed": 0, "total": 2 }
+      "result": {
+        "status": "passed",
+        "passed": 1,
+        "total": 1
+      }
+    },
+    {
+      "version": 1,
+      "platform": "GCP",
+      "category": "Host and Cluster Security",
+      "resource": "GKE",
+      "title": "GKE Node Pools should use the COS or COS_CONTAINERD Operating System",
+      "description": "GKE Nodes can leverage either Container-Optimized OS or Ubuntu-based operating system images.  Unless there is a very specific use-case that a Container-Optimized OS image cannot support such as installed certain drivers and/or kernel modules, Ubuntu nodes are not recommended.  Container-Optimized OS is a fully hardened operating system designed specifically to run containerized workloads with a high degree of security, and it receives automatic updates from Google.  The track record for security issues that affect Ubuntu nodes in GKE that did not affect COS nodes is also important to consider.",
+      "remediation": "Configure your GKE Node Pools to leverage either the COS or COS_CONTAINERD image type.  The COS image leverages Docker, and the COS_CONTAINERD image implements only containerd and does not use the commonly known Docker socket at `/var/run/docker.sock` which allows applications that can access that socket to effectively be `root` on the host.  If your workloads do not require the ability to mount the docker socket for activities such as image building in-cluster or certain security features, COS_CONTAINERD offers an even smaller attack surface than COS.  Considerations: changing the image type recreates the nodes in the node pool.",
+      "validation": "Run `gcloud container clusters describe <clustername> --format=json | jq -r 'select(.nodePools[].config.imageType | test(\"^COS\")) | .name'` and ensure that the cluster's name is listed.",
+      "severity": 0.5,
+      "effort": 0.9,
+      "references": [
+        {
+          "url": "https://cloud.google.com/kubernetes-engine/docs/concepts/node-images",
+          "ref": "GKE Node Images"
+        }
+      ],
+      "resources": [
+        {
+          "status": "passed",
+          "resource": "demo1-good/us-central1/gke-good/default-pool"
+        }
+      ],
+      "result": {
+        "status": "passed",
+        "passed": 1,
+        "total": 1
+      }
+    },
+    {
+      "version": 1,
+      "platform": "GCP",
+      "category": "Host and Cluster Security",
+      "resource": "GKE",
+      "title": "GKE Workload Identity should be enabled and enforcing metadata protection on all NodePools",
+      "description": "Currently, all pods have the ability to reach the Instance Metadata API corresponding to the underlying node.  By extension, those pods can access the APIs and data used to bootstrap the Kubernetes worker node.  The credentials used to bootstrap a Kubernetes worker node are very commonly sufficient to be used to privilege escalate to `cluster-admin`.  Also by extension, this means that every container image ever run in this cluster in the non-production namespace has had the ability to reach and export these credentials.  Therefore, it's very important for a cluster's security posture to prevent pods from being able to reach the Instance Metadata API to fetch those bootstrapping credentials.",
+      "remediation": "Configure Workload Identity on the cluster and every node pool in the cluster with the GKE_METADATA setting enabled.  Alternatively, deploy an egress NetworkPolicy blocking egress to 169.254.169.254 for all non-kube-system namespaces.",
+      "validation": "Run `gcloud container clusters describe <clustername> --format=json | jq -r 'select(.workloadIdentityConfig.workloadPool | test(\"svc.id.goog\")) | .name'` and ensure that the cluster's name is listed.",
+      "severity": 0.9,
+      "effort": 0.5,
+      "references": [
+        {
+          "url": "https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity",
+          "ref": "GKE Workload Identity"
+        },
+        {
+          "url": "https://cloud.google.com/kubernetes-engine/docs/how-to/hardening-your-cluster#workload_identity",
+          "ref": "Hardening GKE"
+        }
+      ],
+      "resources": [
+        {
+          "status": "passed",
+          "resource": "demo1-good/us-central1/gke-good"
+        },
+        {
+          "status": "passed",
+          "resource": "demo1-good/us-central1/gke-good/default-pool"
+        }
+      ],
+      "result": {
+        "status": "passed",
+        "passed": 2,
+        "total": 2
+      }
+    },
+    {
+      "version": 1,
+      "platform": "GCP",
+      "category": "Operations and Response",
+      "resource": "GKE",
+      "title": "Production GKE Clusters should have a highly-available control plane",
+      "description": "By default, GKE creates a `zonal` cluster.  That is, a cluster where the single control plane GCE instance is deployed in one GCP availability zone.  GKE clusters can also be configured as `regional` clusters in which three control plane GCE instances can be deployed evenly across three availability zones at no direct, additional cost.  Having three control plane instances insulates from a single control plane instance failure and allows for zero-downtime API server upgrades.",
+      "remediation": "For all production GKE clusters, configure the `location` as the region name instead of the zone name.  This requires rebuilding the cluster if it is already deployed as a zonal cluster.",
+      "validation": "Run `gcloud container clusters describe <clustername> --format=json | jq -r 'select(.location | test(\"^[a-z]+-[a-z0-9]+$\")) | .name'` and ensure that the cluster's name is listed.",
+      "severity": 0.9,
+      "effort": 0.9,
+      "references": [
+        {
+          "url": "https://cloud.google.com/kubernetes-engine/docs/concepts/regional-clusters",
+          "ref": "GKE Regional Clusters"
+        }
+      ],
+      "resources": [
+        {
+          "status": "passed",
+          "resource": "demo1-good/us-central1/gke-good"
+        }
+      ],
+      "result": {
+        "status": "passed",
+        "passed": 1,
+        "total": 1
+      }
+    },
+    {
+      "version": 1,
+      "platform": "GCP",
+      "category": "Host and Cluster Security",
+      "resource": "GKE",
+      "title": "GKE Shielded Nodes should be enabled on all NodePools",
+      "description": "Starting in GKE 1.13.6 and later, GKE Worker nodes can be provisioned with a Virtual Trusted Platform Module (vTPM) that can be used to cryptographically verify the integrity of the boot process and to securely distribute the bootstrapping credentials used by the Kubelet to attach the node to the cluster on first boot.  Without this feature, the Kubelet's bootstrapping credentials are available via the GCE Metadata API, and that can be accessed by any Pod unless additional protections are put in place.  These credentials can be leveraged to escalate to cluster-admin in most situations.",
+      "remediation": "Modify the cluster node pool configuration to enable shielded nodes (--enable-shielded-nodes) and secure boot (--shielded-secure-boot).  This will remove the sensitive bootstrapping credentials from the GCE Metadata API and enable additional verification checks to ensure the worker nodes have not been compromised at a fundamental level.  Considerations: The nodes must be running the COS or COS_CONTAINERD operating system, and enabling this change will require a node pool rolling redeployment performed at the next maintenance window.",
+      "validation": "Run `gcloud container clusters describe <clustername> --format=json | jq -r 'select(.nodePools[].config.shieldedInstanceConfig.enableIntegrityMonitoring==true and .nodePools[].config.shieldedInstanceConfig.enableSecureBoot==true) | \"(.name)\"'` and ensure that the cluster's name is listed.",
+      "severity": 0.5,
+      "effort": 0.5,
+      "references": [
+        {
+          "url": "https://cloud.google.com/kubernetes-engine/docs/how-to/shielded-gke-nodes",
+          "ref": "GKE Shielded Nodes"
+        },
+        {
+          "url": "https://cloud.google.com/kubernetes-engine/docs/how-to/hardening-your-cluster#shielded_nodes",
+          "ref": "Hardening GKE"
+        }
+      ],
+      "resources": [
+        {
+          "status": "passed",
+          "resource": "demo1-good/us-central1/gke-good"
+        },
+        {
+          "status": "passed",
+          "resource": "demo1-good/us-central1/gke-good/default-pool"
+        }
+      ],
+      "result": {
+        "status": "passed",
+        "passed": 2,
+        "total": 2
+      }
     },
     {
       "version": 1,
@@ -190,11 +342,24 @@
         }
       ],
       "resources": [
-        { "status": "failed", "resource": "default namespace" },
-        { "status": "passed", "resource": "kube-public namespace" },
-        { "status": "passed", "resource": "kube-node-lease namespace" }
+        {
+          "status": "passed",
+          "resource": "default namespace"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-public namespace"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-node-lease namespace"
+        }
       ],
-      "result": { "status": "failed", "passed": 2, "total": 3 }
+      "result": {
+        "status": "passed",
+        "passed": 3,
+        "total": 3
+      }
     },
     {
       "version": 1,
@@ -213,8 +378,17 @@
           "ref": "Kubernetes Dashboard"
         }
       ],
-      "resources": [{ "status": "passed", "resource": "Dashboard" }],
-      "result": { "status": "passed", "passed": 1, "total": 1 }
+      "resources": [
+        {
+          "status": "passed",
+          "resource": "Dashboard"
+        }
+      ],
+      "result": {
+        "status": "passed",
+        "passed": 1,
+        "total": 1
+      }
     },
     {
       "version": 1,
@@ -228,7 +402,10 @@
       "severity": 1,
       "effort": 0.2,
       "references": [
-        { "url": "https://helm.sh", "ref": "Helm" },
+        {
+          "url": "https://helm.sh",
+          "ref": "Helm"
+        },
         {
           "url": "https://helm.sh/docs/faq/#removal-of-tiller",
           "ref": "Tiller v2"
@@ -243,13 +420,28 @@
         }
       ],
       "resources": [
-        { "status": "passed", "resource": "default/tiller-deploy" },
-        { "status": "passed", "resource": "kube-node-lease/tiller-deploy" },
-        { "status": "passed", "resource": "kube-public/tiller-deploy" },
-        { "status": "passed", "resource": "kube-system/tiller-deploy" },
-        { "status": "passed", "resource": "user/tiller-deploy" }
+        {
+          "status": "passed",
+          "resource": "default/tiller-deploy"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-node-lease/tiller-deploy"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-public/tiller-deploy"
+        },
+        {
+          "status": "passed",
+          "resource": "kube-system/tiller-deploy"
+        }
       ],
-      "result": { "status": "passed", "passed": 5, "total": 5 }
+      "result": {
+        "status": "passed",
+        "passed": 4,
+        "total": 4
+      }
     },
     {
       "version": 1,
@@ -274,151 +466,147 @@
       ],
       "resources": [
         {
-          "status": "failed",
-          "resource": "default/nginx-deployment-7b6dc68dbb-8gz5m"
-        },
-        {
-          "status": "failed",
-          "resource": "default/nginx-deployment-7b6dc68dbb-q4jkr"
-        },
-        {
-          "status": "failed",
-          "resource": "default/nginx-deployment-7b6dc68dbb-qdmzp"
+          "status": "passed",
+          "resource": "kube-system/calico-node-cgmrm"
         },
         {
           "status": "passed",
-          "resource": "kube-system/event-exporter-v0.3.0-74bf544f8b-vb8v5"
+          "resource": "kube-system/calico-node-ksnxl"
         },
         {
           "status": "passed",
-          "resource": "kube-system/fluentd-gcp-scaler-dd489f778-hhss8"
+          "resource": "kube-system/calico-node-sk52q"
         },
         {
           "status": "passed",
-          "resource": "kube-system/fluentd-gcp-v3.1.1-26sln"
+          "resource": "kube-system/calico-node-vertical-autoscaler-b889c775f-4p5lp"
         },
         {
           "status": "passed",
-          "resource": "kube-system/fluentd-gcp-v3.1.1-5n2k7"
+          "resource": "kube-system/calico-typha-79799497d7-d45tb"
         },
         {
           "status": "passed",
-          "resource": "kube-system/fluentd-gcp-v3.1.1-8lz2x"
+          "resource": "kube-system/calico-typha-horizontal-autoscaler-d777c75b4-t6wrs"
         },
         {
           "status": "passed",
-          "resource": "kube-system/fluentd-gcp-v3.1.1-d6ptz"
+          "resource": "kube-system/calico-typha-vertical-autoscaler-d9b7979f8-4dn4r"
         },
         {
           "status": "passed",
-          "resource": "kube-system/fluentd-gcp-v3.1.1-dd4bw"
+          "resource": "kube-system/event-exporter-v0.2.5-599d65f456-r84sb"
         },
         {
           "status": "passed",
-          "resource": "kube-system/fluentd-gcp-v3.1.1-glvv7"
+          "resource": "kube-system/fluentd-gcp-scaler-bfd6cf8dd-7v9k8"
         },
         {
           "status": "passed",
-          "resource": "kube-system/heapster-gke-6c76c6dc88-w8b9q"
+          "resource": "kube-system/fluentd-gcp-v3.1.1-b7zxm"
         },
         {
           "status": "passed",
-          "resource": "kube-system/kube-dns-5dbbd9cc58-nz2bn"
+          "resource": "kube-system/fluentd-gcp-v3.1.1-d48wf"
         },
         {
           "status": "passed",
-          "resource": "kube-system/kube-dns-5dbbd9cc58-v4bwl"
+          "resource": "kube-system/fluentd-gcp-v3.1.1-l4p9s"
         },
         {
           "status": "passed",
-          "resource": "kube-system/kube-dns-autoscaler-6b7f784798-bvk49"
+          "resource": "kube-system/gke-metadata-server-gd229"
         },
         {
           "status": "passed",
-          "resource": "kube-system/kube-proxy-gke-backend-browser-pool-67219391-7qmv"
+          "resource": "kube-system/gke-metadata-server-pxsg8"
         },
         {
           "status": "passed",
-          "resource": "kube-system/kube-proxy-gke-backend-browser-pool-a359c4d3-hg20"
+          "resource": "kube-system/gke-metadata-server-z82hz"
         },
         {
           "status": "passed",
-          "resource": "kube-system/kube-proxy-gke-backend-browser-pool-af38c7a9-fj5m"
+          "resource": "kube-system/heapster-gke-5d4687d6b-fbmbw"
         },
         {
           "status": "passed",
-          "resource": "kube-system/kube-proxy-gke-backend-default-pool-4d0b0293-k7dx"
+          "resource": "kube-system/ip-masq-agent-5f6dk"
         },
         {
           "status": "passed",
-          "resource": "kube-system/kube-proxy-gke-backend-default-pool-c5fceb32-ght0"
+          "resource": "kube-system/ip-masq-agent-ndmng"
         },
         {
           "status": "passed",
-          "resource": "kube-system/kube-proxy-gke-backend-default-pool-ec412615-r005"
+          "resource": "kube-system/ip-masq-agent-t68rs"
         },
         {
           "status": "passed",
-          "resource": "kube-system/l7-default-backend-84c9fcfbb-68nfm"
+          "resource": "kube-system/kube-dns-5995c95f64-65whd"
         },
         {
           "status": "passed",
-          "resource": "kube-system/metadata-proxy-v0.1-4zlj9"
+          "resource": "kube-system/kube-dns-5995c95f64-qh96l"
         },
         {
           "status": "passed",
-          "resource": "kube-system/metadata-proxy-v0.1-67t47"
+          "resource": "kube-system/kube-dns-autoscaler-8687c64fc-zjxw7"
         },
         {
           "status": "passed",
-          "resource": "kube-system/metadata-proxy-v0.1-7ckgc"
+          "resource": "kube-system/kube-proxy-gke-gke-good-default-pool-49d0d21c-qvqw"
         },
         {
           "status": "passed",
-          "resource": "kube-system/metadata-proxy-v0.1-bx6kb"
+          "resource": "kube-system/kube-proxy-gke-gke-good-default-pool-587d7233-7c59"
         },
         {
           "status": "passed",
-          "resource": "kube-system/metadata-proxy-v0.1-cbdpp"
+          "resource": "kube-system/kube-proxy-gke-gke-good-default-pool-b79b736e-zvth"
         },
         {
           "status": "passed",
-          "resource": "kube-system/metadata-proxy-v0.1-rgkff"
+          "resource": "kube-system/l7-default-backend-8f479dd9-x8fcj"
         },
         {
           "status": "passed",
-          "resource": "kube-system/metrics-server-v0.3.3-6fb7b9484f-jl244"
+          "resource": "kube-system/metrics-server-v0.3.1-5c6fbf777-nmsqc"
         },
         {
           "status": "passed",
-          "resource": "kube-system/prometheus-to-sd-425s4"
+          "resource": "kube-system/netd-n4b4x"
         },
         {
           "status": "passed",
-          "resource": "kube-system/prometheus-to-sd-46v5v"
+          "resource": "kube-system/netd-pq7cf"
         },
         {
           "status": "passed",
-          "resource": "kube-system/prometheus-to-sd-6rjnv"
+          "resource": "kube-system/netd-tgmnc"
         },
         {
           "status": "passed",
-          "resource": "kube-system/prometheus-to-sd-crjz7"
+          "resource": "kube-system/prometheus-to-sd-l2dw2"
         },
         {
           "status": "passed",
-          "resource": "kube-system/prometheus-to-sd-lx8m5"
+          "resource": "kube-system/prometheus-to-sd-ttbhf"
         },
         {
           "status": "passed",
-          "resource": "kube-system/prometheus-to-sd-v6rqv"
+          "resource": "kube-system/prometheus-to-sd-ww56d"
         },
         {
           "status": "passed",
-          "resource": "kube-system/stackdriver-metadata-agent-cluster-level-648cd5cc74-zm2kf"
+          "resource": "kube-system/stackdriver-metadata-agent-cluster-level-658bd899cd-x9zxx"
         }
       ],
-      "result": { "status": "failed", "passed": 33, "total": 36 }
+      "result": {
+        "status": "passed",
+        "passed": 34,
+        "total": 34
+      }
     },
     {
       "version": 1,
@@ -437,33 +625,12 @@
           "ref": "Kubectl List Images"
         }
       ],
-      "resources": [
-        {
-          "status": "failed",
-          "resource": "default/nginx-deployment-7b6dc68dbb-8gz5m[nginx:1.14.2]"
-        },
-        {
-          "status": "failed",
-          "resource": "default/nginx-deployment-7b6dc68dbb-8gz5m[redis:latest]"
-        },
-        {
-          "status": "failed",
-          "resource": "default/nginx-deployment-7b6dc68dbb-q4jkr[nginx:1.14.2]"
-        },
-        {
-          "status": "failed",
-          "resource": "default/nginx-deployment-7b6dc68dbb-q4jkr[redis:latest]"
-        },
-        {
-          "status": "failed",
-          "resource": "default/nginx-deployment-7b6dc68dbb-qdmzp[nginx:1.14.2]"
-        },
-        {
-          "status": "failed",
-          "resource": "default/nginx-deployment-7b6dc68dbb-qdmzp[redis:latest]"
-        }
-      ],
-      "result": { "status": "failed", "passed": 0, "total": 6 }
+      "resources": [],
+      "result": {
+        "status": "passed",
+        "passed": 0,
+        "total": 0
+      }
     },
     {
       "version": 1,
@@ -491,9 +658,16 @@
         }
       ],
       "resources": [
-        { "status": "failed", "resource": "NetworkPolicy Daemonset" }
+        {
+          "status": "passed",
+          "resource": "NetworkPolicy Daemonset"
+        }
       ],
-      "result": { "status": "failed", "passed": 0, "total": 1 }
+      "result": {
+        "status": "passed",
+        "passed": 1,
+        "total": 1
+      }
     },
     {
       "version": 1,
@@ -517,11 +691,20 @@
         }
       ],
       "resources": [
-        { "status": "failed", "resource": "default" },
-        { "status": "failed", "resource": "kube-system" },
-        { "status": "failed", "resource": "user" }
+        {
+          "status": "failed",
+          "resource": "default"
+        },
+        {
+          "status": "failed",
+          "resource": "kube-system"
+        }
       ],
-      "result": { "status": "failed", "passed": 0, "total": 3 }
+      "result": {
+        "status": "failed",
+        "passed": 0,
+        "total": 2
+      }
     },
     {
       "version": 1,
@@ -561,11 +744,24 @@
         }
       ],
       "resources": [
-        { "status": "failed", "resource": "OPA/Gatekeeper" },
-        { "status": "failed", "resource": "K-rail" },
-        { "status": "failed", "resource": "PodSecurityPolicy" }
+        {
+          "status": "failed",
+          "resource": "OPA/Gatekeeper"
+        },
+        {
+          "status": "failed",
+          "resource": "K-rail"
+        },
+        {
+          "status": "failed",
+          "resource": "PodSecurityPolicy"
+        }
       ],
-      "result": { "status": "failed", "passed": 0, "total": 3 }
+      "result": {
+        "status": "failed",
+        "passed": 0,
+        "total": 3
+      }
     }
   ]
 }
