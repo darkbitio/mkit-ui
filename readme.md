@@ -52,16 +52,6 @@ Find out more about deployment here:
 
 ### Build Static Demo Site
 
-Push a new release tag.
-
-```
-$ git tag v1.2.0
-$ git push origin v1.2.0
-```
-
-
-### Build Static Demo Site
-
 Builds the GitHub pages static demo site.
 
 ```
