@@ -27,8 +27,7 @@ class Finding extends React.Component {
     return (
       <tr
         onClick={open}
-        className={status === 'failed' ? 'finding finding-fail' : 'finding'}
-      >
+        className={status === 'failed' ? 'finding finding-fail' : 'finding'}>
         <td className='px-6 py-4 whitespace-no-wrap border-b border-gray-200'>
           <div className='flex items-center'>
             <div className='flex-shrink-0 h-10 w-10'>

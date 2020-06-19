@@ -2,6 +2,7 @@ import React from 'react'
 import Resources from './Resources'
 import Icon from './Icon'
 import Badge from './Badge'
+const ReactMarkdown = require('react-markdown')
 
 class Modal extends React.Component {
   handleEscapeKey = event => {
@@ -55,12 +56,10 @@ class Modal extends React.Component {
       return (
         <div
           className='fixed bottom-0 inset-x-0 px-4 pb-6 sm:inset-0 sm:p-0 sm:flex sm:items-center sm:justify-center'
-          style={{ display: 'flex' }}
-        >
+          style={{ display: 'flex' }}>
           <div
             className='fixed inset-0 transition-opacity'
-            onClick={this.props.handleClose}
-          >
+            onClick={this.props.handleClose}>
             <div className='absolute inset-0 bg-gray-500 opacity-75'></div>
           </div>
 
@@ -84,15 +83,13 @@ class Modal extends React.Component {
                   <div className='ml-auto modal-close-button'>
                     <div
                       onClick={this.props.handleClose}
-                      className='flex justify-end text-gray-500'
-                    >
+                      className='flex justify-end text-gray-500'>
                       <svg
                         viewBox='0 0 24 24'
                         stroke='currentColor'
                         width='24'
                         height='24'
-                        className='modal-close'
-                      >
+                        className='modal-close'>
                         <path
                           strokeLinecap='round'
                           strokeLinejoin='round'
@@ -112,7 +109,7 @@ class Modal extends React.Component {
                       Description
                     </dt>
                     <dd className='mt-1 text-sm leading-5 text-gray-600 sm:mt-0 sm:col-span-3'>
-                      {finding.description}
+                      <ReactMarkdown source={finding.description} />
                     </dd>
                   </div>
                   <div className='mt-8 sm:mt-0 sm:grid sm:grid-cols-4 sm:gap-4 sm:border-t sm:border-gray-200 sm:px-6 sm:py-5'>
@@ -128,7 +125,7 @@ class Modal extends React.Component {
                       Remediation
                     </dt>
                     <dd className='mt-1 text-sm leading-5 text-gray-600 sm:mt-0 sm:col-span-3'>
-                      {finding.remediation}
+                      <ReactMarkdown source={finding.remediation} />
                     </dd>
                   </div>
                   <div className='mt-8 sm:mt-0 sm:grid sm:grid-cols-4 sm:gap-4 sm:border-t sm:border-gray-200 sm:px-6 sm:py-5'>
@@ -136,7 +133,7 @@ class Modal extends React.Component {
                       Validation
                     </dt>
                     <dd className='mt-1 text-sm leading-5 text-gray-600 sm:mt-0 sm:col-span-3'>
-                      {finding.validation}
+                      <ReactMarkdown source={finding.validation} />
                     </dd>
                   </div>
                   <div className='mt-8 sm:mt-0 sm:grid sm:grid-cols-4 sm:gap-4 sm:border-t sm:border-gray-200 sm:px-6 sm:py-5'>
@@ -151,15 +148,13 @@ class Modal extends React.Component {
                               key={idx}
                               className={`${
                                 idx > 0 ? 'border-t border-gray-200' : ''
-                              } pl-3 pr-4 py-3 flex items-center justify-between text-sm leading-5`}
-                            >
+                              } pl-3 pr-4 py-3 flex items-center justify-between text-sm leading-5`}>
                               <div className='w-0 flex-1 flex items-center'>
                                 <svg
                                   className='flex-shrink-0 h-5 w-5 text-indigo-500 hover:text-indigo-600'
                                   fill='none'
                                   viewBox='0 0 24 24'
-                                  stroke='currentColor'
-                                >
+                                  stroke='currentColor'>
                                   <path
                                     strokeLinecap='round'
                                     strokeLinejoin='round'
@@ -171,8 +166,7 @@ class Modal extends React.Component {
                                   <a
                                     href={reference.url}
                                     target='_blank'
-                                    rel='noopener noreferrer'
-                                  >
+                                    rel='noopener noreferrer'>
                                     {reference.ref}
                                   </a>
                                 </span>
@@ -194,12 +188,10 @@ class Modal extends React.Component {
       return (
         <div
           className='fixed bottom-0 inset-x-0 px-4 pb-6 sm:inset-0 sm:p-0 sm:flex sm:items-center sm:justify-center'
-          style={{ display: 'flex' }}
-        >
+          style={{ display: 'flex' }}>
           <div
             className='fixed inset-0 transition-opacity'
-            onClick={this.props.handleClose}
-          >
+            onClick={this.props.handleClose}>
             <div className='absolute inset-0 bg-gray-500 opacity-75'></div>
           </div>
 
@@ -212,8 +204,7 @@ class Modal extends React.Component {
                       className='h-6 w-6 text-white'
                       fill='none'
                       viewBox='0 0 24 24'
-                      stroke='currentColor'
-                    >
+                      stroke='currentColor'>
                       <path
                         strokeLinecap='round'
                         strokeLinejoin='round'
@@ -235,15 +226,13 @@ class Modal extends React.Component {
                   <div className='ml-auto modal-close-button'>
                     <div
                       onClick={this.props.handleClose}
-                      className='flex justify-end text-gray-500'
-                    >
+                      className='flex justify-end text-gray-500'>
                       <svg
                         viewBox='0 0 24 24'
                         stroke='currentColor'
                         width='24'
                         height='24'
-                        className='modal-close'
-                      >
+                        className='modal-close'>
                         <path
                           strokeLinecap='round'
                           strokeLinejoin='round'

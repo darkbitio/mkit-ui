@@ -22,6 +22,11 @@ tr.finding:hover svg {
   overflow-y: auto;
 }
 
+.modal-body code {
+  font-size: 0.75rem;
+  color: #2c7be5;
+}
+
 /* Octo Corner - https://github.com/tholman/github-corners */
 .github-corner svg {
   position: absolute;
