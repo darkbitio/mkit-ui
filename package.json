@@ -28,6 +28,7 @@
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
     "autoprefixer": "^9.7.4",
+    "elliptic": "^6.5.3",
     "postcss-cli": "^7.1.0",
     "tailwindcss": "^1.2.0",
     "websocket-extensions": "^0.1.4"
