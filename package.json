@@ -13,7 +13,7 @@
     "prestart": "yarn build:styles"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.28.0",
     "express": "^4.17.1",
     "json2csv": "^4.5.4",
     "react": "^16.13.0",
